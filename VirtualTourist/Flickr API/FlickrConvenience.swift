@@ -47,46 +47,43 @@ extension Flickr {
                 return
             }
             
-            pin.originalPhotoCount = photoArray.count
-            
-            // Check if the photo count is more than 0
-            guard photoArray.count > 0 else {
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                pin.originalPhotoCount = photoArray.count
                 
-                // Can't leave the UI hanging
-                completionHandler?()
-                return
-            }
-            
-            // Create the dictionary send to the Update initializer
-            let dictionary: [String: AnyObject] = [
-                Update.Keys.Description: "Photo Object(s) Created",
-                Update.Keys.Latitude: pin.latitude,
-                Update.Keys.Longitude: pin.longitude,
-                Update.Keys.NumberOfItems: photoArray.count,
-                Update.Keys.UpdateType: "Photo Creation"
-            ]
-            
-            let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
-            
-            // Use the photoArray and point it to the pin
-            for photo in photoArray {
-                // Needs to be on the main thread since we're using the default managedObjectContext
-                // Created on the main thread
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                // Check if the photo count is more than 0
+                guard photoArray.count > 0 else {
+                    
+                    // Can't leave the UI hanging
+                    completionHandler?()
+                    return
+                }
+                
+                // Create the dictionary send to the Update initializer
+                let dictionary: [String: AnyObject] = [
+                    Update.Keys.Description: "Photo Object(s) Created",
+                    Update.Keys.Latitude: pin.latitude,
+                    Update.Keys.Longitude: pin.longitude,
+                    Update.Keys.NumberOfItems: photoArray.count,
+                    Update.Keys.UpdateType: "Photo Creation"
+                ]
+                
+                let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
+                
+                // Use the photoArray and point it to the pin
+                for photo in photoArray {
                     let newPhoto = Photo(dictionary: photo, context: CoreDataStackManager.sharedInstance().managedObjectContext)
                     
                     // Assign the photo to its pin
                     newPhoto.pin = pin
-
+                    
                     // This allows the empty boxes to appear before the photos are loaded
                     CoreDataStackManager.sharedInstance().saveContext()
                     
                     // 2. Create the photo URL and grab the image (prefetch)
                     self.loadImagesWithSize(newPhoto, size: ImageSizesForURL.LargeSquare, completionHandler: completionHandler)
-                })
-            }
+                }
+            })
         }
-        
         pin.task = task
     }
     
@@ -95,12 +92,12 @@ extension Flickr {
         let request = NSURLRequest(URL: url)
         let task = self.session.dataTaskWithRequest(request, completionHandler: { (data, response, error) -> Void in
             guard error == nil else {
-                print("Photo ID: \(photo.id) - Error retrieving photo: \(error!.localizedDescription)")
+                print("\(error!.localizedDescription)")
                 return
             }
             
             guard let statusCode = (response as? NSHTTPURLResponse)?.statusCode where 200...299 ~= statusCode else {
-                print("Photo ID: \(photo.id) - Invalid Status code retrieving photo data")
+                print("Invalid Status code retrieving photo data")
                 return
             }
             

@@ -62,8 +62,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         
     
         // Check if the task loading the photo objects is currently loading.
-        toggleUI()
         if let state = pin.task?.state {
+            toggleUI()
+
             switch state {
             case .Running: print("Disabling the UI - Running")
             case .Canceling: print("Disabling the UI - Canceling"); pin.task?.resume()
@@ -80,17 +81,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         // Delegate
         mapView.delegate = self
         fetchedResultsController.delegate = self
-        
-        guard let photo = fetchedResultsController.fetchedObjects?.first as? Photo, let pin = photo.pin else {
-            print("The pin has no photos... or they're not loaded yet")
-            return
-        }
-        
-        let latitude = pin.latitude
-        let longitude = pin.longitude
-        
-        // TODO: Delete - Everything below is for debugging purposes
-        print("long: \(longitude), lat: \(latitude)")
     }
     
     // MARK: - UICollectionViewDelegateFlowLayout methods
@@ -133,6 +123,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         
         switch type {
         case .Update:
+            print("Updating")
             let operation = NSBlockOperation(block: { () -> Void in
                 guard let indexPath = indexPath else {
                     return
@@ -148,6 +139,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
                     cell.toggleUI()
                 }
             })
+            
+            self.checkToEnableUI()
             operationQueue.append(operation)
         case .Delete:
             let operation = NSBlockOperation(block: { () -> Void in
@@ -159,6 +152,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             })
             operationQueue.append(operation)
         case .Insert:
+            print("Inserting")
             let operation = NSBlockOperation(block: { () -> Void in
                 guard let indexPath = newIndexPath else {
                     return
@@ -175,7 +169,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             operation.start()
         }
         
-        self.checkToEnableUI()
+        // self.checkToEnableUI()
         operationQueue = nil
     }
     
@@ -267,9 +261,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             // Remove all photos related to this pin
             pin.removePhotos()
             
-            Flickr.sharedInstance().retrieveImages(pin, dictionary: dictionary) {
-                self.toggleUI()
-            }
+            Flickr.sharedInstance().retrieveImages(pin, dictionary: dictionary, completionHandler: nil)
             CoreDataStackManager.sharedInstance().saveContext()
         } else {
             // Create the dictionary send to the Update initializer
@@ -331,9 +323,12 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         let photos = self.fetchedResultsController.fetchedObjects as! [Photo]
         let unloadedPhotos = photos.filter {!$0.imageLoaded}
         
+        print(unloadedPhotos.count)
+        
         // There are no photos that are still loading, if stopped here
         // Enable the toolbarbutton and stop the activity indicator
         guard unloadedPhotos.count > 0 else {
+            print("Enabling UI")
             self.toolbarButton.enabled = true
             self.activityIndicator.stopAnimating()
             
