@@ -18,8 +18,10 @@ class Photo: NSManagedObject {
     @NSManaged var title: String
     @NSManaged var pin: Pin?
     @NSManaged var dateCreated: NSDate
-    @NSManaged var image: NSData?
     @NSManaged var farm: Int
+    @NSManaged var imageLoaded: Bool
+    
+    @NSManaged var imagePath: String
     
     struct Keys {
         static let ID = "id"
@@ -27,7 +29,6 @@ class Photo: NSManagedObject {
         static let Secret = "secret"
         static let Server = "server"
         static let Title = "title"
-        static let ImagePath = "imagePath"
         static let Farm = "farm"
     }
     
@@ -39,7 +40,6 @@ class Photo: NSManagedObject {
         let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         
-        // Assign the creation time to this managed object.
         self.dateCreated = NSDate()
         
         self.id = dictionary[Keys.ID] as! String
@@ -48,6 +48,30 @@ class Photo: NSManagedObject {
         self.server = dictionary[Keys.Server] as! String
         self.title = dictionary[Keys.Title] as! String
         self.farm = dictionary[Keys.Farm] as! Int
+        
+        let formatter = NSDateFormatter()
+        formatter.dateFormat = "yyyyMMddGHHmmsszzz"
+        
+        self.imagePath = "/\(formatter.stringFromDate(dateCreated))_\(self.id)_\(self.secret)_q.jpg"
+        
+        // Used to notify fetchresultscontroller
+        self.imageLoaded = false
+    }
+
+    override func prepareForDeletion() {
+        super.prepareForDeletion()
+        
+        // Removes the image from cache and disk
+        image = nil
     }
     
+    // Image
+    var image: UIImage? {
+        get {
+            return Flickr.Caches.imageCache.imageWithIdentifier(imagePath)
+        }
+        set {
+            Flickr.Caches.imageCache.storeImage(newValue, withIdentifier: imagePath)
+        }
+    }
 }

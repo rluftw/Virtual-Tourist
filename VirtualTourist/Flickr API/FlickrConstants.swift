@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension FlickrNetworkRequest {
+extension Flickr {
     
     // API Methods
     struct Methods {
@@ -38,6 +38,8 @@ extension FlickrNetworkRequest {
         static let Page = "page"
         static let ID = "photo_id"
         
+        static let Context = "geo_context"
+        
         // Used for image fetching (Size)
         static let Label = "label"
     }
@@ -45,11 +47,14 @@ extension FlickrNetworkRequest {
     
     // Parameter values
     struct ParameterValues {
-        static let APIKey = ""
+        static let APIKey = "API KEY HERE"
         static let NoJSONCallBack = "1"
         static let Format = "json"
         static let Accuracy = "16"  // Street
-        static let PerPage = "12"
+        static let PerPage = "21"
+        
+        // Indoors (1) / Outdoors (2)
+        static let Context = "2"
         
         /*
             1 public photos

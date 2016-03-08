@@ -4,7 +4,8 @@
         <attribute name="dateCreated" attributeType="Date" syncable="YES"/>
         <attribute name="farm" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="id" attributeType="String" syncable="YES"/>
-        <attribute name="image" optional="YES" attributeType="Binary" storedInTruthFile="YES" syncable="YES"/>
+        <attribute name="imageLoaded" optional="YES" attributeType="Boolean" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="imagePath" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="owner" attributeType="String" syncable="YES"/>
         <attribute name="secret" attributeType="String" syncable="YES"/>
         <attribute name="server" attributeType="String" syncable="YES"/>
@@ -15,11 +16,21 @@
         <attribute name="dateCreated" attributeType="Date" syncable="YES"/>
         <attribute name="latitude" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="longitude" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="originalPhotoCount" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="page" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <relationship name="photos" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Photo" inverseName="pin" inverseEntity="Photo" syncable="YES"/>
     </entity>
+    <entity name="Update" representedClassName=".Update" syncable="YES">
+        <attribute name="dateCreated" attributeType="Date" syncable="YES"/>
+        <attribute name="latitude" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="longitude" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="numberOfItems" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="updateDescription" attributeType="String" syncable="YES"/>
+        <attribute name="updateType" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <elements>
-        <element name="Photo" positionX="-63" positionY="-18" width="128" height="180"/>
-        <element name="Pin" positionX="-54" positionY="45" width="128" height="120"/>
+        <element name="Photo" positionX="-63" positionY="-18" width="128" height="195"/>
+        <element name="Pin" positionX="-54" positionY="45" width="128" height="135"/>
+        <element name="Update" positionX="-54" positionY="63" width="128" height="135"/>
     </elements>
 </model>

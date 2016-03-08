@@ -1,5 +1,5 @@
 //
-//  FlickrNetworkRequest.swift
+//  Flickr.swift
 //  VirtualTourist
 //
 //  Created by Xing Hui Lu on 2/26/16.
@@ -9,19 +9,32 @@
 import Foundation
 import UIKit
 
-class FlickrNetworkRequest {
+class Flickr {
     let session = NSURLSession.sharedSession()
     
-    class func sharedInstance() -> FlickrNetworkRequest {
+    class func sharedInstance() -> Flickr {
         struct Singleton {
-            static let networkOperation = FlickrNetworkRequest()
+            static let networkOperation = Flickr()
         }
         return Singleton.networkOperation
+    }
+    
+    struct Caches {
+        static let imageCache = ImageCache()
+    }
+    
+    // MARK: - Canceling network task
+    func cancelAllNetworkTask() {
+        NSURLSession.sharedSession().getAllTasksWithCompletionHandler({ (tasks) -> Void in
+            for task in tasks {
+                task.cancel()
+            }
+        })
     }
 
     // MARK: - All purpose task method for data
     
-    func httpGetRequest(parameters: [String: AnyObject]?, completionHandler: (result: AnyObject!, error: NSError?)->Void) {
+    func httpGetRequest(parameters: [String: AnyObject]?, completionHandler: (result: AnyObject!, error: NSError?)->Void) -> NSURLSessionTask {
         let request = NSURLRequest(URL: getCompleteURL(parameters))
         
         let task = session.dataTaskWithRequest(request) { (data, response, error) -> Void in
@@ -67,12 +80,12 @@ class FlickrNetworkRequest {
         // Start the task
         task.resume()
         
-        // TODO: Determine if we actually need to return the task
+        return task
     }
 }
 
 
-extension FlickrNetworkRequest {
+extension Flickr {
     
     // MARK: - Helper methods
     
@@ -123,11 +136,10 @@ extension FlickrNetworkRequest {
         completionHandler(nil, error)
     }
     
-    
     // Helper method to create an error for httpGetRequest
     
     func createErrorWithCompletionHandler(code: Int, error: String, completionHandler: (AnyObject!, NSError?)->Void) -> NSError {
-        var userInfo: [String: AnyObject]!
+        var userInfo = [String: AnyObject]()
         userInfo[NSLocalizedDescriptionKey] = error
         
         return NSError(domain:"httpGetRequest", code: code, userInfo: userInfo)

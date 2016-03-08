@@ -12,9 +12,24 @@ import CoreData
 
 class TravelLocationsMapViewController: UIViewController, NSFetchedResultsControllerDelegate, MKMapViewDelegate {
     
+    var editingPin = false
+    
     // MARK: - IBOutlets
     
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var lastEditLabel: UILabel!
+    
+    @IBAction func toggleEdit(sender: AnyObject) {
+        editingPin = !editingPin
+        
+        let button = sender as! UIBarButtonItem
+        button.title = button.title == "Edit" ? "Done": "Edit"
+        
+        // Commit the changes to core data after editing
+        if !editingPin {
+            CoreDataStackManager.sharedInstance().saveContext()
+        }
+    }
     
     // MARK: - Core Data
     
@@ -32,7 +47,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Load previous region
         restoreMapRegion(true)
         
@@ -108,10 +123,10 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         
         pinView!.draggable = true
         pinView!.animatesDrop = true
-        pinView!.pinTintColor = UIColor(red: 1.0, green: 127.0/255.0, blue: 0.0, alpha: 1.0)
+        pinView!.pinTintColor = UIColor(red: 16.0/255, green: 58.0/255, blue: 143.0/255, alpha: 1.0)
         
         // Add a tap gesture
-        let tapGesture = UITapGestureRecognizer(target: self, action: "presentPhotos:")
+        let tapGesture = UITapGestureRecognizer(target: self, action: "pinTapped:")
         pinView!.addGestureRecognizer(tapGesture)
         
         return pinView
@@ -121,6 +136,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     var currentPinToMove: Pin!
     
     func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, didChangeDragState newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
+        
         switch newState {
         case .Starting:
             let coordinate = view.annotation!.coordinate
@@ -133,11 +149,10 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             
             currentPinToMove = pins[index]
             
-            // Delete all older photos and get ready for new ones!
-            for photo in currentPinToMove.photos {
-                photo.pin = nil
-            }
+            currentPinToMove.removePhotos()
             
+            // End all other network task to focus on this current pin
+            Flickr.sharedInstance().cancelAllNetworkTask()
         case .Ending:
             let coordinate = view.annotation!.coordinate
             currentPinToMove.longitude = coordinate.longitude
@@ -147,15 +162,16 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             let dictionary = [
                 Pin.Keys.Latitude: coordinate.latitude,
                 Pin.Keys.Longitude: coordinate.longitude,
-                FlickrNetworkRequest.ParameterKeys.Page: 1
+                Flickr.ParameterKeys.Page: 1
             ]
             
             // Create the photo objects and assignment to the pin
-            FlickrNetworkRequest.sharedInstance().retrieveImages(currentPinToMove, dictionary: dictionary)
+            Flickr.sharedInstance().retrieveImages(currentPinToMove, dictionary: dictionary, completionHandler: nil)
             
             currentPinToMove = nil
         default: break
         }
+        
     }
     
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -165,6 +181,12 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // MARK: - Selectors
     
     func addPin(gesture: UILongPressGestureRecognizer) {
+        
+        // While the user is editing, adding pins is not available
+        guard editingPin == false else {
+            return
+        }
+        
         switch gesture.state {
         case .Began:
             let point = gesture.locationInView(mapView)
@@ -176,23 +198,62 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             let dictionary = [
                 Pin.Keys.Longitude: coordinate.longitude,
                 Pin.Keys.Latitude: coordinate.latitude,
-                FlickrNetworkRequest.ParameterKeys.Page: 1
+                Flickr.ParameterKeys.Page: 1
             ]
             
             // Create the pin object and save it to core data
             let newPin = Pin(dictionary: dictionary, context: sharedContext)
             CoreDataStackManager.sharedInstance().saveContext()
             
-            // Create the photo objects and assignment to the pin
-            FlickrNetworkRequest.sharedInstance().retrieveImages(newPin, dictionary: dictionary)
-            
+            let qos = Int(QOS_CLASS_USER_INTERACTIVE.rawValue)
+            dispatch_async(dispatch_get_global_queue(qos, 0), { () -> Void in
+                // Create the photo objects and assignment to the pin
+                Flickr.sharedInstance().retrieveImages(newPin, dictionary: dictionary, completionHandler: nil)
+            })
         default: break
         }
     }
     
-    func presentPhotos(gesture: UITapGestureRecognizer) {
+    // The first scene consist of 2 states which are editingPin/!editingPin
+    // If editingPin, then a tap gesture on a pin would be to delete it
+    // Otherwise, go to the photo album
+    func pinTapped(gesture: UITapGestureRecognizer) {
         let pinView = gesture.view as! MKPinAnnotationView
-        performSegueWithIdentifier("ShowPhotos", sender: pinView)
+
+        if !editingPin {
+            performSegueWithIdentifier("ShowPhotos", sender: pinView)
+        } else {
+            // Cancel all network task
+            Flickr.sharedInstance().cancelAllNetworkTask()
+
+            // Deleting pins
+            
+            // Grab all the pins
+            let pins = fetchedResultsController.fetchedObjects as! [Pin]
+
+            // Grab the pin index associated with the coordinate
+            let index = pins.indexOf({ (pin) -> Bool in
+                pin.latitude == pinView.annotation!.coordinate.latitude && pin.longitude == pinView.annotation!.coordinate.longitude
+            })
+            
+            // Check if there is a pin associated with this coordinate (of course)
+            guard let nonOptionalIndex = index else {
+                print("Could not find the pin in that coordinate")
+                return
+            }
+            
+            // The pin to be deleted, but won't be 
+            // completely deleted until the done button is pressed.
+            let pin = pins[nonOptionalIndex]
+            
+            // 1. Remove the photos associated with this pin on cache and disk
+            pin.removePhotos()
+            
+            // 2. Delete the object itself
+            self.sharedContext.deleteObject(pin)
+            
+            mapView.removeAnnotation(pinView.annotation!)
+        }
     }
     
     // MARK: - Helper methods
@@ -235,10 +296,10 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // MARK: - Navigation
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        // Set the back button
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "OK", style: .Plain, target: nil, action: nil)
+        
         if segue.identifier == "ShowPhotos" {
-            // Set the back button
-            navigationItem.backBarButtonItem = UIBarButtonItem(title: "OK", style: .Plain, target: nil, action: nil)
-            
             // Get the senders coordinates
             let coordinate = (sender as! MKPinAnnotationView).annotation!.coordinate
             
@@ -246,7 +307,16 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             let destination = segue.destinationViewController as! PhotoAlbumViewController
             
             destination.coordinate = coordinate
-        }
-    }
+            
+            // Get the pin associated with the coordinate
+            let allPins = fetchedResultsController.fetchedObjects as! [Pin]
+            guard let index = allPins.indexOf({ (pin) -> Bool in
+                pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude
+            }) else { return }
+            
+            let pin = allPins[index]
+            
+            destination.pin = pin
+        }     }
     
 }

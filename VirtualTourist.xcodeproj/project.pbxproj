@@ -18,9 +18,13 @@
 		374A4F1C1C7EB440003E2529 /* VirtualTourist.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 374A4F1A1C7EB440003E2529 /* VirtualTourist.xcdatamodeld */; };
 		374A4F1E1C7EB440003E2529 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 374A4F1D1C7EB440003E2529 /* Assets.xcassets */; };
 		374A4F211C7EB440003E2529 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 374A4F1F1C7EB440003E2529 /* LaunchScreen.storyboard */; };
+		376C7EB51C8E6FBF00EDA4AD /* Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EB41C8E6FBF00EDA4AD /* Update.swift */; };
+		376C7EB91C8E97B000EDA4AD /* HistoryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EB81C8E97B000EDA4AD /* HistoryTableViewController.swift */; };
+		376C7EBB1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EBA1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift */; };
+		37B095711C8CA47E00E5CE4B /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B095701C8CA47E00E5CE4B /* ImageCache.swift */; };
 		37F4A0FF1C89DC0900F623DA /* FlickrConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F4A0FB1C89DC0900F623DA /* FlickrConstants.swift */; };
 		37F4A1001C89DC0900F623DA /* FlickrConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F4A0FC1C89DC0900F623DA /* FlickrConvenience.swift */; };
-		37F4A1011C89DC0900F623DA /* FlickrNetworkRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F4A0FD1C89DC0900F623DA /* FlickrNetworkRequest.swift */; };
+		37F4A1011C89DC0900F623DA /* Flickr.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F4A0FD1C89DC0900F623DA /* Flickr.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,9 +41,13 @@
 		374A4F1D1C7EB440003E2529 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		374A4F201C7EB440003E2529 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		374A4F221C7EB440003E2529 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		376C7EB41C8E6FBF00EDA4AD /* Update.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Update.swift; path = Models/Update.swift; sourceTree = "<group>"; };
+		376C7EB81C8E97B000EDA4AD /* HistoryTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HistoryTableViewController.swift; path = Controllers/HistoryTableViewController.swift; sourceTree = "<group>"; };
+		376C7EBA1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HistoryTableViewCell.swift; path = Views/HistoryTableViewCell.swift; sourceTree = "<group>"; };
+		37B095701C8CA47E00E5CE4B /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImageCache.swift; path = Models/ImageCache.swift; sourceTree = "<group>"; };
 		37F4A0FB1C89DC0900F623DA /* FlickrConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrConstants.swift; sourceTree = "<group>"; };
 		37F4A0FC1C89DC0900F623DA /* FlickrConvenience.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrConvenience.swift; sourceTree = "<group>"; };
-		37F4A0FD1C89DC0900F623DA /* FlickrNetworkRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrNetworkRequest.swift; sourceTree = "<group>"; };
+		37F4A0FD1C89DC0900F623DA /* Flickr.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flickr.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				37351FFA1C85733600281DF0 /* PhotoCollectionViewCell.swift */,
+				376C7EBA1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -125,6 +134,8 @@
 			children = (
 				37424E621C8144C800371F58 /* Photo.swift */,
 				37424E6B1C816F5000371F58 /* Pin.swift */,
+				37B095701C8CA47E00E5CE4B /* ImageCache.swift */,
+				376C7EB41C8E6FBF00EDA4AD /* Update.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -134,6 +145,7 @@
 			children = (
 				37351FFC1C862B9F00281DF0 /* TravelLocationsMapViewController.swift */,
 				373520001C868B0C00281DF0 /* PhotoAlbumViewController.swift */,
+				376C7EB81C8E97B000EDA4AD /* HistoryTableViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -143,7 +155,7 @@
 			children = (
 				37F4A0FB1C89DC0900F623DA /* FlickrConstants.swift */,
 				37F4A0FC1C89DC0900F623DA /* FlickrConvenience.swift */,
-				37F4A0FD1C89DC0900F623DA /* FlickrNetworkRequest.swift */,
+				37F4A0FD1C89DC0900F623DA /* Flickr.swift */,
 			);
 			path = "Flickr API";
 			sourceTree = "<group>";
@@ -226,12 +238,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37F4A1011C89DC0900F623DA /* FlickrNetworkRequest.swift in Sources */,
+				37F4A1011C89DC0900F623DA /* Flickr.swift in Sources */,
+				376C7EB51C8E6FBF00EDA4AD /* Update.swift in Sources */,
 				373520011C868B0C00281DF0 /* PhotoAlbumViewController.swift in Sources */,
 				37F4A0FF1C89DC0900F623DA /* FlickrConstants.swift in Sources */,
+				376C7EB91C8E97B000EDA4AD /* HistoryTableViewController.swift in Sources */,
 				37351FFD1C862B9F00281DF0 /* TravelLocationsMapViewController.swift in Sources */,
 				37424E631C8144C800371F58 /* Photo.swift in Sources */,
 				37351FFB1C85733600281DF0 /* PhotoCollectionViewCell.swift in Sources */,
+				37B095711C8CA47E00E5CE4B /* ImageCache.swift in Sources */,
+				376C7EBB1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift in Sources */,
 				37424E681C81475900371F58 /* CoreDataStackManager.swift in Sources */,
 				374A4F141C7EB440003E2529 /* AppDelegate.swift in Sources */,
 				37424E6C1C816F5000371F58 /* Pin.swift in Sources */,
