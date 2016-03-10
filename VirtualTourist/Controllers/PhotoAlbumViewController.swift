@@ -216,6 +216,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         
         cell.alpha = index == nil ? 1.0: 0.5
         
+        // Add the gesture to hold resulting in a pop up view that shows a larger photo
+        let holdGesture = UILongPressGestureRecognizer(target: self, action: "displayLargerPhoto:")
+        cell.addGestureRecognizer(holdGesture)
+        
         return cell
     }
     
@@ -295,6 +299,16 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         
         // After deletion, toggle the bar button title
         toggleSelection(nil)
+    }
+    
+    // MARK: - Selectors
+    
+    func displayLargerPhoto(gesture: UILongPressGestureRecognizer) {
+        switch gesture.state {
+        case .Began: break  // Will display the imagePopUpView
+        case .Ended: break  // Will remove the imagePopUpView
+        default: break
+        }
     }
     
     // MARK: - Helper methods

@@ -13,7 +13,7 @@ class Update: NSManagedObject {
     @NSManaged var dateCreated: NSDate
     @NSManaged var updateType: String
     @NSManaged var updateDescription: String
-    @NSManaged var numberOfItems: NSNumber
+    @NSManaged var numberOfItems: Int
     @NSManaged var longitude: Double
     @NSManaged var latitude: Double 
     
