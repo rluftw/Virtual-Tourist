@@ -31,19 +31,19 @@ extension Flickr {
         let task = httpGetRequest(searchParameters) { (result, error) -> Void in
             // make sure there are no errors
             guard error == nil else {
-                print("(Long, Lat): (\(pin.longitude), \(pin.latitude)) - Retrieving the Image - Photo")
+                print("Retrieving the Image - Photo")
                 return
             }
             
             // convert the result into a dictionary
             guard let result = result as? [String: AnyObject] else {
-                print("(Long, Lat): (\(pin.longitude), \(pin.latitude)) - Invalid results - photo")
+                print("Invalid results - photo")
                 return
             }
             
             // retrieve the photo dictionary and array
             guard let photoDictionary = result["photos"] as? [String: AnyObject], let photoArray = photoDictionary["photo"] as? [[String: AnyObject]] else {
-                print("(Long, Lat): (\(pin.longitude), \(pin.latitude)) - Invalid positioning - Photo")
+                print("Invalid positioning - Photo")
                 return
             }
             
@@ -57,18 +57,7 @@ extension Flickr {
                     completionHandler?()
                     return
                 }
-                
-                // Create the dictionary send to the Update initializer
-                let dictionary: [String: AnyObject] = [
-                    Update.Keys.Description: "Photo Object(s) Created",
-                    Update.Keys.Latitude: pin.latitude,
-                    Update.Keys.Longitude: pin.longitude,
-                    Update.Keys.NumberOfItems: photoArray.count,
-                    Update.Keys.UpdateType: "Photo Creation"
-                ]
-                
-                let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
-                
+
                 // Use the photoArray and point it to the pin
                 for photo in photoArray {
                     let newPhoto = Photo(dictionary: photo, context: CoreDataStackManager.sharedInstance().managedObjectContext)
@@ -80,14 +69,14 @@ extension Flickr {
                     CoreDataStackManager.sharedInstance().saveContext()
                     
                     // 2. Create the photo URL and grab the image (prefetch)
-                    self.loadImagesWithSize(newPhoto, size: ImageSizesForURL.LargeSquare, completionHandler: completionHandler)
+                    self.loadImagesWithSize(newPhoto, size: ImageSizesForURL.LargeSquare, completionHandler: completionHandler, photoDataHandler: nil)
                 }
             })
         }
         pin.task = task
     }
     
-    func loadImagesWithSize(photo: Photo, size: String, completionHandler: (()->Void)?) {
+    func loadImagesWithSize(photo: Photo, size: String, completionHandler: (()->Void)?, photoDataHandler: ((NSData)->Void)?) -> NSURLSessionTask {
         let url = self.createPhotoURL(photo, withSize: size)
         let request = NSURLRequest(URL: url)
         let task = self.session.dataTaskWithRequest(request, completionHandler: { (data, response, error) -> Void in
@@ -105,56 +94,69 @@ extension Flickr {
                 print("No data returned")
                 return
             }
-        
+            
+            
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                photo.image = UIImage(data: data)
-                photo.imageLoaded = true
-                
-                CoreDataStackManager.sharedInstance().saveContext()
-                
-                // Maybe the pin was removed.
-                guard let pin = photo.pin else {
-                    print("The photo is not associated with a pin yet")
-                    return
-                }
-                
-                // Check if all of the pin's photos have been loaded.
-                let photos = pin.photos
-                
-                // 1. find an index with the property image loaded false
-                let photosWithNoImages = photos.filter({ !$0.imageLoaded })
-                
-                // 2. If the image are no photos with no images, execute the completion handler
-                if photosWithNoImages.count == 0 {
+                // check if the size requested was small
+                if size == Flickr.ImageSizesForURL.LargeSquare {
+                    photo.image = UIImage(data: data)
+                    photo.imageLoaded = true
                     
-                    // There may be a completion handler (or not)
-                    // Thats because we're also using this method while loading the cells
-                    completionHandler?()
-                    
-                    // Create the dictionary send to the Update initializer
-                    let dictionary: [String: AnyObject] = [
-                        Update.Keys.Description: "Image(s) Created",
-                        Update.Keys.Latitude: pin.latitude,
-                        Update.Keys.Longitude: pin.longitude,
-                        Update.Keys.NumberOfItems: photos.count,
-                        Update.Keys.UpdateType: "Image Creation"
-                    ]
-                    
-                    // Create an update
-                    let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
                     CoreDataStackManager.sharedInstance().saveContext()
+                    
+                    // Maybe the pin was removed.
+                    guard let pin = photo.pin else {
+                        print("The photo is not associated with a pin yet")
+                        return
+                    }
+                    
+                    // Check if all of the pin's photos have been loaded.
+                    let photos = pin.photos
+                    
+                    
+                    // 1. find an index with the property image loaded false
+                    let photosWithNoImages = photos.filter({ !$0.imageLoaded })
+                    
+                    // 2. If the image are no photos with no images, execute the completion handler
+                    if photosWithNoImages.count == 0 {
+                        
+                        // There may be a completion handler (or not)
+                        // Thats because we're also using this method while loading the cells
+                        completionHandler?()
+                        
+                        // Create the dictionary send to the Update initializer
+                        let dictionary: [String: AnyObject] = [
+                            Update.Keys.Description: "Image(s) Created",
+                            Update.Keys.Latitude: pin.latitude,
+                            Update.Keys.Longitude: pin.longitude,
+                            Update.Keys.NumberOfItems: photos.count,
+                            Update.Keys.UpdateType: "Image Creation"
+                        ]
+                        
+                        // Create an update
+                        let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
+                        CoreDataStackManager.sharedInstance().saveContext()
+                    }
+                } else {
+                    guard let photoDataHandler = photoDataHandler else {
+                        return
+                    }
+                    
+                    photoDataHandler(data)
                 }
             })
         })
         
         task.resume()
+        
+        return task
     }
     
     // MARK: - Helper method
     
     func createPhotoURL(photo: Photo, withSize size: String) -> NSURL {
         let urlString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret)_\(size).jpg"
-        // print(urlString)
+        print(urlString)
         
         let url = NSURL(string: urlString)!
         

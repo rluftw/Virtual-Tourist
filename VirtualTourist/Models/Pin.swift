@@ -61,17 +61,15 @@ class Pin: NSManagedObject {
         
         // Create the dictionary send to initialize an update object
         let dictionary: [String: AnyObject] = [
-            Update.Keys.Description: "Photo Object(s) Deleted",
+            Update.Keys.Description: "Image(s) Deleted",
             Update.Keys.Latitude: latitude,
             Update.Keys.Longitude: longitude,
             Update.Keys.NumberOfItems: photos.count,
-            Update.Keys.UpdateType: "Photo Deletion"
+            Update.Keys.UpdateType: "Image Deletion"
         ]
         
         let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
         
-        // TODO: Delete
-        print("\(photos.count) photos (object) deleted from pin located at lat: \(latitude), lon: \(longitude)")
         
         // Remove previous photos
         for photo in photos {

@@ -14,6 +14,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     var coordinate: CLLocationCoordinate2D!
     var pin: Pin!   // Used to refresh the photos
+    var imagePopUpView: ImagePopUpView?
     
     // MARK: - Core Data
     
@@ -138,6 +139,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
                 if cell.activityIndicator.isAnimating() {
                     cell.toggleUI()
                 }
+                
+                // Add the gesture to hold resulting in a pop up view that shows a larger photo
+                let holdGesture = UILongPressGestureRecognizer(target: self, action: "displayLargerPhoto:")
+                cell.addGestureRecognizer(holdGesture)
             })
             
             self.checkToEnableUI()
@@ -199,7 +204,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             
             // But first cancel all other task to download this image
             NSURLSession.sharedSession().invalidateAndCancel()
-            Flickr.sharedInstance().loadImagesWithSize(photo, size: Flickr.ImageSizesForURL.LargeSquare, completionHandler: nil)
+            Flickr.sharedInstance().loadImagesWithSize(photo, size: Flickr.ImageSizesForURL.LargeSquare, completionHandler: nil, photoDataHandler: nil)
             
             return cell
         }
@@ -304,10 +309,26 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     // MARK: - Selectors
     
     func displayLargerPhoto(gesture: UILongPressGestureRecognizer) {
-        switch gesture.state {
-        case .Began: break  // Will display the imagePopUpView
-        case .Ended: break  // Will remove the imagePopUpView
-        default: break
+        let cell = gesture.view as! PhotoCollectionViewCell
+        if !cell.activityIndicator.isAnimating() {
+            switch gesture.state {
+            case .Began:
+                let cell = gesture.view as! PhotoCollectionViewCell
+                guard let indexPath = collectionView.indexPathForCell(cell) else {
+                    print("Cell not in this indexPath")
+                    return
+                }
+                
+                let photo = fetchedResultsController.fetchedObjects![indexPath.row] as! Photo
+                
+                imagePopUpView = ImagePopUpView.imagePopUpViewInView(view, animated: true, photo: photo)
+            case .Ended:
+                imagePopUpView?.removeFromSuperview()
+                imagePopUpView = nil
+            default: break
+            }
+        } else {
+            print("Small photo still loading")
         }
     }
     

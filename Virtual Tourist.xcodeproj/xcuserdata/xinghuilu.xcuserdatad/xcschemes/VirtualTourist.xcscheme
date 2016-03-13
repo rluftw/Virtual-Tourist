@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "374A4F0F1C7EB440003E2529"
-               BuildableName = "VirtualTourist.app"
-               BlueprintName = "VirtualTourist"
-               ReferencedContainer = "container:VirtualTourist.xcodeproj">
+               BuildableName = "Virtual Tourist.app"
+               BlueprintName = "Virtual Tourist"
+               ReferencedContainer = "container:Virtual Tourist.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "374A4F0F1C7EB440003E2529"
-            BuildableName = "VirtualTourist.app"
-            BlueprintName = "VirtualTourist"
-            ReferencedContainer = "container:VirtualTourist.xcodeproj">
+            BuildableName = "Virtual Tourist.app"
+            BlueprintName = "Virtual Tourist"
+            ReferencedContainer = "container:Virtual Tourist.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "374A4F0F1C7EB440003E2529"
-            BuildableName = "VirtualTourist.app"
-            BlueprintName = "VirtualTourist"
-            ReferencedContainer = "container:VirtualTourist.xcodeproj">
+            BuildableName = "Virtual Tourist.app"
+            BlueprintName = "Virtual Tourist"
+            ReferencedContainer = "container:Virtual Tourist.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -81,9 +81,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "374A4F0F1C7EB440003E2529"
-            BuildableName = "VirtualTourist.app"
-            BlueprintName = "VirtualTourist"
-            ReferencedContainer = "container:VirtualTourist.xcodeproj">
+            BuildableName = "Virtual Tourist.app"
+            BlueprintName = "Virtual Tourist"
+            ReferencedContainer = "container:Virtual Tourist.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

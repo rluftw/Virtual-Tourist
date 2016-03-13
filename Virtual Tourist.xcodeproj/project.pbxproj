@@ -21,6 +21,7 @@
 		376C7EB51C8E6FBF00EDA4AD /* Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EB41C8E6FBF00EDA4AD /* Update.swift */; };
 		376C7EB91C8E97B000EDA4AD /* HistoryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EB81C8E97B000EDA4AD /* HistoryTableViewController.swift */; };
 		376C7EBB1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EBA1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift */; };
+		376C7EBF1C91106500EDA4AD /* ImagePopUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376C7EBE1C91106500EDA4AD /* ImagePopUpView.swift */; };
 		37B095711C8CA47E00E5CE4B /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B095701C8CA47E00E5CE4B /* ImageCache.swift */; };
 		37F4A0FF1C89DC0900F623DA /* FlickrConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F4A0FB1C89DC0900F623DA /* FlickrConstants.swift */; };
 		37F4A1001C89DC0900F623DA /* FlickrConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F4A0FC1C89DC0900F623DA /* FlickrConvenience.swift */; };
@@ -34,7 +35,7 @@
 		37424E621C8144C800371F58 /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Photo.swift; path = Models/Photo.swift; sourceTree = "<group>"; };
 		37424E671C81475900371F58 /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CoreDataStackManager.swift; path = CoreData/CoreDataStackManager.swift; sourceTree = "<group>"; };
 		37424E6B1C816F5000371F58 /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Pin.swift; path = Models/Pin.swift; sourceTree = "<group>"; };
-		374A4F101C7EB440003E2529 /* VirtualTourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTourist.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		374A4F101C7EB440003E2529 /* Virtual Tourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Virtual Tourist.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		374A4F131C7EB440003E2529 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		374A4F181C7EB440003E2529 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		374A4F1B1C7EB440003E2529 /* VirtualTourist.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = VirtualTourist.xcdatamodel; sourceTree = "<group>"; };
@@ -44,6 +45,7 @@
 		376C7EB41C8E6FBF00EDA4AD /* Update.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Update.swift; path = Models/Update.swift; sourceTree = "<group>"; };
 		376C7EB81C8E97B000EDA4AD /* HistoryTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HistoryTableViewController.swift; path = Controllers/HistoryTableViewController.swift; sourceTree = "<group>"; };
 		376C7EBA1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HistoryTableViewCell.swift; path = Views/HistoryTableViewCell.swift; sourceTree = "<group>"; };
+		376C7EBE1C91106500EDA4AD /* ImagePopUpView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImagePopUpView.swift; path = Views/ImagePopUpView.swift; sourceTree = "<group>"; };
 		37B095701C8CA47E00E5CE4B /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImageCache.swift; path = Models/ImageCache.swift; sourceTree = "<group>"; };
 		37F4A0FB1C89DC0900F623DA /* FlickrConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrConstants.swift; sourceTree = "<group>"; };
 		37F4A0FC1C89DC0900F623DA /* FlickrConvenience.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrConvenience.swift; sourceTree = "<group>"; };
@@ -81,7 +83,7 @@
 		374A4F111C7EB440003E2529 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				374A4F101C7EB440003E2529 /* VirtualTourist.app */,
+				374A4F101C7EB440003E2529 /* Virtual Tourist.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,6 +127,7 @@
 			children = (
 				37351FFA1C85733600281DF0 /* PhotoCollectionViewCell.swift */,
 				376C7EBA1C8E9DDB00EDA4AD /* HistoryTableViewCell.swift */,
+				376C7EBE1C91106500EDA4AD /* ImagePopUpView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -170,9 +173,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		374A4F0F1C7EB440003E2529 /* VirtualTourist */ = {
+		374A4F0F1C7EB440003E2529 /* Virtual Tourist */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 374A4F251C7EB440003E2529 /* Build configuration list for PBXNativeTarget "VirtualTourist" */;
+			buildConfigurationList = 374A4F251C7EB440003E2529 /* Build configuration list for PBXNativeTarget "Virtual Tourist" */;
 			buildPhases = (
 				374A4F0C1C7EB440003E2529 /* Sources */,
 				374A4F0D1C7EB440003E2529 /* Frameworks */,
@@ -182,9 +185,9 @@
 			);
 			dependencies = (
 			);
-			name = VirtualTourist;
+			name = "Virtual Tourist";
 			productName = VirtualTourist;
-			productReference = 374A4F101C7EB440003E2529 /* VirtualTourist.app */;
+			productReference = 374A4F101C7EB440003E2529 /* Virtual Tourist.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -202,7 +205,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 374A4F0B1C7EB440003E2529 /* Build configuration list for PBXProject "VirtualTourist" */;
+			buildConfigurationList = 374A4F0B1C7EB440003E2529 /* Build configuration list for PBXProject "Virtual Tourist" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -215,7 +218,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				374A4F0F1C7EB440003E2529 /* VirtualTourist */,
+				374A4F0F1C7EB440003E2529 /* Virtual Tourist */,
 			);
 		};
 /* End PBXProject section */
@@ -239,6 +242,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				37F4A1011C89DC0900F623DA /* Flickr.swift in Sources */,
+				376C7EBF1C91106500EDA4AD /* ImagePopUpView.swift in Sources */,
 				376C7EB51C8E6FBF00EDA4AD /* Update.swift in Sources */,
 				373520011C868B0C00281DF0 /* PhotoAlbumViewController.swift in Sources */,
 				37F4A0FF1C89DC0900F623DA /* FlickrConstants.swift in Sources */,
@@ -366,7 +370,7 @@
 				INFOPLIST_FILE = VirtualTourist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.richurd.VirtualTourist;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Virtual Tourist";
 			};
 			name = Debug;
 		};
@@ -377,14 +381,14 @@
 				INFOPLIST_FILE = VirtualTourist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.richurd.VirtualTourist;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Virtual Tourist";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		374A4F0B1C7EB440003E2529 /* Build configuration list for PBXProject "VirtualTourist" */ = {
+		374A4F0B1C7EB440003E2529 /* Build configuration list for PBXProject "Virtual Tourist" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				374A4F231C7EB440003E2529 /* Debug */,
@@ -393,7 +397,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		374A4F251C7EB440003E2529 /* Build configuration list for PBXNativeTarget "VirtualTourist" */ = {
+		374A4F251C7EB440003E2529 /* Build configuration list for PBXNativeTarget "Virtual Tourist" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				374A4F261C7EB440003E2529 /* Debug */,
