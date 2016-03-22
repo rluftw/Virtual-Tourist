@@ -39,7 +39,7 @@ class HistoryTableViewController: UITableViewController, NSFetchedResultsControl
         tableView.tableFooterView = UIView(frame: CGRectZero)
         
         // Create the right bar button item
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Clear History", style: .Plain, target: self, action: "clearAll")
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Clear History", style: .Plain, target: self, action: #selector(clearAll))
     }
 
     // MARK: - Table view data source

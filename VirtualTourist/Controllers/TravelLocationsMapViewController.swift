@@ -52,7 +52,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         restoreMapRegion(true)
         
         // Assign the long touch gesture to add pin
-        let longTouch = UILongPressGestureRecognizer(target: self, action: "addPin:")
+        let longTouch = UILongPressGestureRecognizer(target: self, action: #selector(addPin(_:)))
         mapView.addGestureRecognizer(longTouch)
         
         // Fetch the objects
@@ -126,7 +126,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         pinView!.pinTintColor = UIColor(red: 16.0/255, green: 58.0/255, blue: 143.0/255, alpha: 1.0)
         
         // Add a tap gesture
-        let tapGesture = UITapGestureRecognizer(target: self, action: "pinTapped:")
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(pinTapped(_:)))
         pinView!.addGestureRecognizer(tapGesture)
         
         return pinView

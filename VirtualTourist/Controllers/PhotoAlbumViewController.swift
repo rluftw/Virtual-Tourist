@@ -141,7 +141,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
                 }
                 
                 // Add the gesture to hold resulting in a pop up view that shows a larger photo
-                let holdGesture = UILongPressGestureRecognizer(target: self, action: "displayLargerPhoto:")
+                let holdGesture = UILongPressGestureRecognizer(target: self, action: #selector(self.displayLargerPhoto(_:)))
                 cell.addGestureRecognizer(holdGesture)
             })
             
@@ -222,7 +222,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         cell.alpha = index == nil ? 1.0: 0.5
         
         // Add the gesture to hold resulting in a pop up view that shows a larger photo
-        let holdGesture = UILongPressGestureRecognizer(target: self, action: "displayLargerPhoto:")
+        let holdGesture = UILongPressGestureRecognizer(target: self, action: #selector(displayLargerPhoto(_:)))
         cell.addGestureRecognizer(holdGesture)
         
         return cell
@@ -259,7 +259,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             }
             
             // Reset the page if there isn't enough photos
-            pin.page = pin.originalPhotoCount == 21 ? ++pin.page: 1
+            pin.page = pin.originalPhotoCount == 21 ? (1+pin.page): 1
             
             let dictionary: [String: AnyObject] = [
                 Pin.Keys.Longitude: coordinate.longitude,
