@@ -47,7 +47,7 @@ extension Flickr {
     
     // Parameter values
     struct ParameterValues {
-        static let APIKey = "d065c36dc39bf41b2209ae299cf56d61"
+        static let APIKey = "afd541b35bc0957502a4e33626776fc9"
         static let NoJSONCallBack = "1"
         static let Format = "json"
         static let Accuracy = "16"  // Street
