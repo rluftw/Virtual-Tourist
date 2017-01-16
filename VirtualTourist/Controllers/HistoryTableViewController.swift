@@ -12,8 +12,8 @@ import CoreData
 class HistoryTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
 
     // MARK: - Core Data
-    lazy var fetchedResultsController: NSFetchedResultsController = {
-        let request = NSFetchRequest(entityName: "Update")
+    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = { () -> NSFetchedResultsController<NSFetchRequestResult> in
+        let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Update")
         request.sortDescriptors = [NSSortDescriptor(key: "dateCreated", ascending: false)]
         
         return NSFetchedResultsController(fetchRequest: request, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
@@ -36,63 +36,63 @@ class HistoryTableViewController: UITableViewController, NSFetchedResultsControl
         } catch { }
         
         // Don't want the extra space below the table
-        tableView.tableFooterView = UIView(frame: CGRectZero)
+        tableView.tableFooterView = UIView(frame: CGRect.zero)
         
         // Create the right bar button item
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Clear History", style: .Plain, target: self, action: #selector(clearAll))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Clear History", style: .plain, target: self, action: #selector(clearAll))
     }
 
     // MARK: - Table view data source
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return fetchedResultsController.fetchedObjects?.count ?? 0
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("HistoryCell", forIndexPath: indexPath) as! HistoryTableViewCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "HistoryCell", for: indexPath) as! HistoryTableViewCell
         
-        let formatter = NSDateFormatter()
-        formatter.dateStyle = .ShortStyle
-        formatter.timeStyle = .MediumStyle
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .medium
         
         let fetchedObjects = fetchedResultsController.fetchedObjects as! [Update]
         let update = fetchedObjects[indexPath.row]
         
         cell.changeType.text = update.updateType
         cell.descriptionLabel.text = "\(update.numberOfItems) \(update.updateDescription)"
-        cell.dateOfChange.text = formatter.stringFromDate(update.dateCreated)
+        cell.dateOfChange.text = formatter.string(from: update.dateCreated)
         
         return cell
     }
     
     // MARK: - Table view delegate
     
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         switch editingStyle {
-        case .Delete:
+        case .delete:
             let fetchedObjects = fetchedResultsController.fetchedObjects as! [Update]
             let update = fetchedObjects[indexPath.row]
             
-            CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(update)
+            CoreDataStackManager.sharedInstance().managedObjectContext.delete(update)
         default: break
         }
     }
     
     // MARK: - NSFetchedResultsControllerDelegate delegate
     
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
     
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
-        case .Insert: tableView.insertRowsAtIndexPaths([NSIndexPath(forItem: 0, inSection: 0)], withRowAnimation: .Fade)
-        case .Delete: tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
+        case .insert: tableView.insertRows(at: [IndexPath(item: 0, section: 0)], with: .fade)
+        case .delete: tableView.deleteRows(at: [indexPath!], with: .fade)
         default: break
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
     }
     
@@ -100,7 +100,7 @@ class HistoryTableViewController: UITableViewController, NSFetchedResultsControl
     func clearAll() {
         let fetchedObjects = fetchedResultsController.fetchedObjects as! [Update]
         for update in fetchedObjects {
-            CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(update)
+            CoreDataStackManager.sharedInstance().managedObjectContext.delete(update)
         }
         CoreDataStackManager.sharedInstance().saveContext()
     }

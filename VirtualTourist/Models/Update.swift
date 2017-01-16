@@ -10,15 +10,15 @@ import Foundation
 import CoreData
 
 class Update: NSManagedObject {
-    @NSManaged var dateCreated: NSDate
+    @NSManaged var dateCreated: Date
     @NSManaged var updateType: String
     @NSManaged var updateDescription: String
     @NSManaged var numberOfItems: Int
     @NSManaged var longitude: Double
     @NSManaged var latitude: Double 
     
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
     
     struct Keys {
@@ -29,9 +29,9 @@ class Update: NSManagedObject {
         static let UpdateType = "type"
     }
     
-    init(dictionary: [String: AnyObject], context: NSManagedObjectContext) {
-        let entity = NSEntityDescription.entityForName("Update", inManagedObjectContext: context)
-        super.init(entity: entity!, insertIntoManagedObjectContext: context)
+    init(dictionary: [String: Any], context: NSManagedObjectContext) {
+        let entity = NSEntityDescription.entity(forEntityName: "Update", in: context)
+        super.init(entity: entity!, insertInto: context)
         
         self.updateType = dictionary[Keys.UpdateType] as! String
         self.updateDescription = dictionary[Keys.Description] as! String
@@ -39,6 +39,6 @@ class Update: NSManagedObject {
         self.latitude = dictionary[Keys.Latitude] as! Double
         self.numberOfItems = dictionary[Keys.NumberOfItems] as! Int
         
-        self.dateCreated = NSDate()
+        self.dateCreated = Date()
     }
 }

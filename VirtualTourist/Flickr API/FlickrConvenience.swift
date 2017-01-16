@@ -13,8 +13,8 @@ extension Flickr {
     
     // Convenience method - Retrieve all photo information
     
-    func retrieveImages(pin: Pin, dictionary: [String: AnyObject], completionHandler: (()->Void)?) {
-        let searchParameters: [String: AnyObject] = [
+    func retrieveImages(_ pin: Pin, dictionary: [String: Any], completionHandler: (()->Void)?) {
+        let searchParameters: [String: Any] = [
             ParameterKeys.APIKey: ParameterValues.APIKey,
             ParameterKeys.Format: ParameterValues.Format,
             ParameterKeys.NoJSONCallBack: ParameterValues.NoJSONCallBack,
@@ -22,7 +22,7 @@ extension Flickr {
             ParameterKeys.Privacy: ParameterValues.Privacy,
             ParameterKeys.Accuracy: ParameterValues.Accuracy,
             ParameterKeys.PerPage: ParameterValues.PerPage,
-            ParameterKeys.Page: dictionary[ParameterKeys.Page] as! Int,
+            ParameterKeys.Page: dictionary[ParameterKeys.Page] as! NSNumber,
             ParameterKeys.Latitude: dictionary[Pin.Keys.Latitude] as! Double,
             ParameterKeys.Longitude: dictionary[Pin.Keys.Longitude] as! Double
         ]
@@ -47,7 +47,7 @@ extension Flickr {
                 return
             }
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 pin.originalPhotoCount = photoArray.count
                 
                 // Check if the photo count is more than 0
@@ -69,23 +69,23 @@ extension Flickr {
                     CoreDataStackManager.sharedInstance().saveContext()
                     
                     // 2. Create the photo URL and grab the image (prefetch)
-                    self.loadImagesWithSize(newPhoto, size: ImageSizesForURL.LargeSquare, completionHandler: completionHandler, photoDataHandler: nil)
+                    _ = self.loadImagesWithSize(newPhoto, size: ImageSizesForURL.LargeSquare, completionHandler: completionHandler, photoDataHandler: nil)
                 }
             })
         }
         pin.task = task
     }
     
-    func loadImagesWithSize(photo: Photo, size: String, completionHandler: (()->Void)?, photoDataHandler: ((NSData)->Void)?) -> NSURLSessionTask {
+    func loadImagesWithSize(_ photo: Photo, size: String, completionHandler: (()->Void)?, photoDataHandler: ((Data)->Void)?) -> URLSessionTask {
         let url = self.createPhotoURL(photo, withSize: size)
-        let request = NSURLRequest(URL: url)
-        let task = self.session.dataTaskWithRequest(request, completionHandler: { (data, response, error) -> Void in
+        let request = URLRequest(url: url)
+        let task = self.session.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
             guard error == nil else {
                 print("\(error!.localizedDescription)")
                 return
             }
             
-            guard let statusCode = (response as? NSHTTPURLResponse)?.statusCode where 200...299 ~= statusCode else {
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, 200...299 ~= statusCode else {
                 print("Invalid Status code retrieving photo data")
                 return
             }
@@ -96,7 +96,7 @@ extension Flickr {
             }
             
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 // check if the size requested was small
                 if size == Flickr.ImageSizesForURL.LargeSquare {
                     photo.image = UIImage(data: data)
@@ -125,7 +125,7 @@ extension Flickr {
                         completionHandler?()
                         
                         // Create the dictionary send to the Update initializer
-                        let dictionary: [String: AnyObject] = [
+                        let dictionary: [String: Any] = [
                             Update.Keys.Description: "Image(s) Created",
                             Update.Keys.Latitude: pin.latitude,
                             Update.Keys.Longitude: pin.longitude,
@@ -154,11 +154,11 @@ extension Flickr {
     
     // MARK: - Helper method
     
-    func createPhotoURL(photo: Photo, withSize size: String) -> NSURL {
+    func createPhotoURL(_ photo: Photo, withSize size: String) -> URL {
         let urlString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret)_\(size).jpg"
         print(urlString)
         
-        let url = NSURL(string: urlString)!
+        let url = URL(string: urlString)!
         
         return url
     }

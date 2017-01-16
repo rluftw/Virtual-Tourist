@@ -19,7 +19,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var lastEditLabel: UILabel!
     
-    @IBAction func toggleEdit(sender: AnyObject) {
+    @IBAction func toggleEdit(_ sender: AnyObject) {
         editingPin = !editingPin
         
         let button = sender as! UIBarButtonItem
@@ -37,9 +37,11 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         return CoreDataStackManager.sharedInstance().managedObjectContext
     }
     
-    lazy var fetchedResultsController: NSFetchedResultsController = {
-        let request = NSFetchRequest(entityName: "Pin")
+    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = { () -> NSFetchedResultsController<NSFetchRequestResult> in
+        let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName:"Pin")
         request.sortDescriptors = [NSSortDescriptor(key: "dateCreated", ascending: true)]
+        print(request.entityName ?? "N/A")
+        
         return NSFetchedResultsController(fetchRequest: request, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
     }()
 
@@ -80,17 +82,17 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     
     // MARK: - NSFetchedResultsController
     
-    var operationQueue: [NSBlockOperation]!
+    var operationQueue: [BlockOperation]!
     
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        operationQueue = [NSBlockOperation]()
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        operationQueue = [BlockOperation]()
     }
     
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
-        case .Insert:
-            let operation = NSBlockOperation(block: { () -> Void in
+        case .insert:
+            let operation = BlockOperation(block: { () -> Void in
                 let pin = anObject as! Pin
                 let pointAnnotation = MKPointAnnotation()
                 pointAnnotation.coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
@@ -102,7 +104,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         for operation in operationQueue {
             operation.start()
         }
@@ -111,17 +113,17 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     
     // MARK: - MKMapViewDelegate methods
     
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseablePinIdentifier = "Pin"
         
-        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseablePinIdentifier) as? MKPinAnnotationView
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseablePinIdentifier) as? MKPinAnnotationView
         if pinView == nil {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseablePinIdentifier)
         } else {
             pinView!.annotation = annotation
         }
         
-        pinView!.draggable = true
+        pinView!.isDraggable = true
         pinView!.animatesDrop = true
         pinView!.pinTintColor = UIColor(red: 16.0/255, green: 58.0/255, blue: 143.0/255, alpha: 1.0)
         
@@ -135,15 +137,15 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // Current Object Dragging
     var currentPinToMove: Pin!
     
-    func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, didChangeDragState newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, didChange newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
         
         switch newState {
-        case .Starting:
+        case .starting:
             let coordinate = view.annotation!.coordinate
             
             // Get the object that has the starting Coordinate
             let pins = fetchedResultsController.fetchedObjects as! [Pin]
-            guard let index = pins.indexOf({ (pin) -> Bool in
+            guard let index = pins.index(where: { (pin) -> Bool in
                 return pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude
             }) else { return }
             
@@ -153,7 +155,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             
             // End all other network task to focus on this current pin
             Flickr.sharedInstance().cancelAllNetworkTask()
-        case .Ending:
+        case .ending:
             let coordinate = view.annotation!.coordinate
             currentPinToMove.longitude = coordinate.longitude
             currentPinToMove.latitude = coordinate.latitude
@@ -174,13 +176,13 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         
     }
     
-    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
         saveRegion()
     }
     
     // MARK: - Selectors
     
-    func addPin(gesture: UILongPressGestureRecognizer) {
+    func addPin(_ gesture: UILongPressGestureRecognizer) {
         
         // While the user is editing, adding pins is not available
         guard editingPin == false else {
@@ -188,9 +190,9 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
         }
         
         switch gesture.state {
-        case .Began:
-            let point = gesture.locationInView(mapView)
-            let coordinate = mapView.convertPoint(point, toCoordinateFromView: mapView)
+        case .began:
+            let point = gesture.location(in: mapView)
+            let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
             
             let pointAnnotation = MKPointAnnotation()
             pointAnnotation.coordinate = coordinate
@@ -202,14 +204,15 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             ]
             
             // Create the pin object and save it to core data
-            let newPin = Pin(dictionary: dictionary, context: sharedContext)
+            let newPin = Pin(dictionary: dictionary as [String : AnyObject], context: sharedContext)
             CoreDataStackManager.sharedInstance().saveContext()
             
-            let qos = Int(QOS_CLASS_USER_INTERACTIVE.rawValue)
-            dispatch_async(dispatch_get_global_queue(qos, 0), { () -> Void in
+            DispatchQueue.global(qos: .userInteractive).async {
                 // Create the photo objects and assignment to the pin
                 Flickr.sharedInstance().retrieveImages(newPin, dictionary: dictionary, completionHandler: nil)
-            })
+
+            }
+
         default: break
         }
     }
@@ -217,11 +220,11 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // The first scene consist of 2 states which are editingPin/!editingPin
     // If editingPin, then a tap gesture on a pin would be to delete it
     // Otherwise, go to the photo album
-    func pinTapped(gesture: UITapGestureRecognizer) {
+    func pinTapped(_ gesture: UITapGestureRecognizer) {
         let pinView = gesture.view as! MKPinAnnotationView
 
         if !editingPin {
-            performSegueWithIdentifier("ShowPhotos", sender: pinView)
+            performSegue(withIdentifier: "ShowPhotos", sender: pinView)
         } else {
             // Cancel all network task
             Flickr.sharedInstance().cancelAllNetworkTask()
@@ -232,7 +235,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             let pins = fetchedResultsController.fetchedObjects as! [Pin]
 
             // Grab the pin index associated with the coordinate
-            let index = pins.indexOf({ (pin) -> Bool in
+            let index = pins.index(where: { (pin) -> Bool in
                 pin.latitude == pinView.annotation!.coordinate.latitude && pin.longitude == pinView.annotation!.coordinate.longitude
             })
             
@@ -250,7 +253,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             pin.removePhotos()
             
             // 2. Delete the object itself
-            self.sharedContext.deleteObject(pin)
+            self.sharedContext.delete(pin)
             
             mapView.removeAnnotation(pinView.annotation!)
         }
@@ -259,13 +262,13 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // MARK: - Helper methods
     
     var mapRegionSettingsFilePath: String {
-        let manager = NSFileManager.defaultManager()
-        let url = manager.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-        return url.URLByAppendingPathComponent("mapRegionArchive").path!
+        let manager = FileManager.default
+        let url = manager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return url.appendingPathComponent("mapRegionArchive").path
     }
     
-    func restoreMapRegion(animated: Bool) {
-        guard let mapSettings = NSKeyedUnarchiver.unarchiveObjectWithFile(mapRegionSettingsFilePath) as? [String: AnyObject] else {
+    func restoreMapRegion(_ animated: Bool) {
+        guard let mapSettings = NSKeyedUnarchiver.unarchiveObject(withFile: mapRegionSettingsFilePath) as? [String: AnyObject] else {
             // First run
             return
         }
@@ -295,22 +298,22 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     
     // MARK: - Navigation
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Set the back button
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "OK", style: .Plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "OK", style: .plain, target: nil, action: nil)
         
         if segue.identifier == "ShowPhotos" {
             // Get the senders coordinates
             let coordinate = (sender as! MKPinAnnotationView).annotation!.coordinate
             
             // Destination
-            let destination = segue.destinationViewController as! PhotoAlbumViewController
+            let destination = segue.destination as! PhotoAlbumViewController
             
             destination.coordinate = coordinate
             
             // Get the pin associated with the coordinate
             let allPins = fetchedResultsController.fetchedObjects as! [Pin]
-            guard let index = allPins.indexOf({ (pin) -> Bool in
+            guard let index = allPins.index(where: { (pin) -> Bool in
                 pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude
             }) else { return }
             

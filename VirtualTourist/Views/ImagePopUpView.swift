@@ -10,7 +10,7 @@ import UIKit
 
 class ImagePopUpView: UIView {
     var photo: Photo!
-    var task: NSURLSessionTask?
+    var task: URLSessionTask?
     
     convenience init(frame: CGRect, photo: Photo) {
         self.init(frame: frame)
@@ -22,17 +22,17 @@ class ImagePopUpView: UIView {
         task?.cancel()
     }
     
-    class func imagePopUpViewInView(view: UIView, animated: Bool, photo: Photo) -> ImagePopUpView {
+    class func imagePopUpViewInView(_ view: UIView, animated: Bool, photo: Photo) -> ImagePopUpView {
         let imageView = ImagePopUpView(frame: view.bounds, photo: photo)
-        imageView.backgroundColor = UIColor.clearColor()
+        imageView.backgroundColor = UIColor.clear
         view.addSubview(imageView)
         
         return imageView
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         // Blur effect
-        let blurEffect = UIBlurEffect(style: .Light)
+        let blurEffect = UIBlurEffect(style: .light)
         let blurVisualEffectView = UIVisualEffectView(effect: blurEffect)
         blurVisualEffectView.frame = rect
         addSubview(blurVisualEffectView)
@@ -51,7 +51,7 @@ class ImagePopUpView: UIView {
         imageView.backgroundColor = UIColor(red: 16.0/255, green: 58.0/255, blue: 143.0/255, alpha: 1.0)
         imageView.layer.cornerRadius = 5.0
         imageView.clipsToBounds = true
-        imageView.contentMode = .ScaleAspectFill
+        imageView.contentMode = .scaleAspectFill
         
         blurVisualEffectView.contentView.addSubview(imageView)
         

@@ -19,9 +19,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     // MARK: - Core Data
     
     // Using this to monitor changes
-    lazy var fetchedResultsController: NSFetchedResultsController = {
-        let request = NSFetchRequest(entityName: "Photo")
-        
+    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = { () -> NSFetchedResultsController<NSFetchRequestResult> in
+        let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Photo")
         request.predicate = NSPredicate(format: "pin.longitude = %lf AND pin.latitude = %lf", self.coordinate.longitude, self.coordinate.latitude)
         request.sortDescriptors = [NSSortDescriptor(key: "dateCreated", ascending: true)]
         
@@ -67,10 +66,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             toggleUI()
 
             switch state {
-            case .Running: print("Disabling the UI - Running")
-            case .Canceling: print("Disabling the UI - Canceling"); pin.task?.resume()
-            case .Completed: print("Completed"); checkToEnableUI()
-            case .Suspended: print("Suspended"); pin.task?.resume();
+            case .running: print("Disabling the UI - Running")
+            case .canceling: print("Disabling the UI - Canceling"); pin.task?.resume()
+            case .completed: print("Completed"); _ = checkToEnableUI()
+            case .suspended: print("Suspended"); pin.task?.resume();
             }
         }
         
@@ -88,7 +87,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     let gapSize: CGFloat = 2.0
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let dimension = (view.bounds.size.width - (gapSize*2.0))/3.0
         return CGSize(width: dimension, height: dimension)
     }
@@ -96,10 +95,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - MKMapVieWDelegate methods
     
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseableMapIdentifier = "Pin"
         
-        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseableMapIdentifier) as? MKPinAnnotationView
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseableMapIdentifier) as? MKPinAnnotationView
         if pinView == nil {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseableMapIdentifier)
         } else {
@@ -114,29 +113,29 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - NSFetchedResultsControllerDelegate methods
     
-    var operationQueue: [NSBlockOperation]!
+    var operationQueue: [BlockOperation]!
     
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        operationQueue = [NSBlockOperation]()
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        operationQueue = [BlockOperation]()
     }
     
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
-        case .Update:
+        case .update:
             print("Updating")
-            let operation = NSBlockOperation(block: { () -> Void in
+            let operation = BlockOperation(block: { () -> Void in
                 guard let indexPath = indexPath else {
                     return
                 }
                 
-                guard let cell = self.collectionView.cellForItemAtIndexPath(indexPath) as? PhotoCollectionViewCell else {
+                guard let cell = self.collectionView.cellForItem(at: indexPath) as? PhotoCollectionViewCell else {
                     return
                 }
                 
                 let updatedPhoto = anObject as! Photo
                 cell.photoView.image = updatedPhoto.image
-                if cell.activityIndicator.isAnimating() {
+                if cell.activityIndicator.isAnimating {
                     cell.toggleUI()
                 }
                 
@@ -145,31 +144,31 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
                 cell.addGestureRecognizer(holdGesture)
             })
             
-            self.checkToEnableUI()
+            _ = self.checkToEnableUI()
             operationQueue.append(operation)
-        case .Delete:
-            let operation = NSBlockOperation(block: { () -> Void in
+        case .delete:
+            let operation = BlockOperation(block: { () -> Void in
                 guard let indexPath = indexPath else {
                     return
                 }
                 
-                self.collectionView.deleteItemsAtIndexPaths([indexPath])
+                self.collectionView.deleteItems(at: [indexPath])
             })
             operationQueue.append(operation)
-        case .Insert:
+        case .insert:
             print("Inserting")
-            let operation = NSBlockOperation(block: { () -> Void in
+            let operation = BlockOperation(block: { () -> Void in
                 guard let indexPath = newIndexPath else {
                     return
                 }
-                self.collectionView.insertItemsAtIndexPaths([indexPath])
+                self.collectionView.insertItems(at: [indexPath])
             })
             operationQueue.append(operation)
         default: break
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         for operation in operationQueue {
             operation.start()
         }
@@ -180,14 +179,14 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - UICollectionViewDataSource methods
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return fetchedResultsController.fetchedObjects?.count ?? 0
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let reuseableCellIdentifier = "PhotoCell"
         
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseableCellIdentifier, forIndexPath: indexPath) as! PhotoCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseableCellIdentifier, for: indexPath) as! PhotoCollectionViewCell
         
         cell.photoView.image = UIImage(named: "placeholder")
         cell.activityIndicator.startAnimating()
@@ -203,19 +202,19 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             // Load the image 
             
             // But first cancel all other task to download this image
-            NSURLSession.sharedSession().invalidateAndCancel()
-            Flickr.sharedInstance().loadImagesWithSize(photo, size: Flickr.ImageSizesForURL.LargeSquare, completionHandler: nil, photoDataHandler: nil)
+            URLSession.shared.invalidateAndCancel()
+            _ = Flickr.sharedInstance().loadImagesWithSize(photo, size: Flickr.ImageSizesForURL.LargeSquare, completionHandler: nil, photoDataHandler: nil)
             
             return cell
         }
         
         cell.photoView.image = image
-        if cell.activityIndicator.isAnimating() {
+        if cell.activityIndicator.isAnimating {
             cell.toggleUI()
         }
         
         // Change alpha value based on whether the cell is selected
-        let index = collectionView.indexPathsForSelectedItems()!.indexOf({(anIndexPath) -> Bool in
+        let index = collectionView.indexPathsForSelectedItems!.index(where: {(anIndexPath) -> Bool in
             return indexPath == anIndexPath
         })
         
@@ -231,20 +230,20 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - UICollectionViewDelegate
     
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         toggleSelection(indexPath)
         
     }
     
-    func collectionView(collectionView: UICollectionView, didDeselectItemAtIndexPath indexPath: NSIndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         toggleSelection(indexPath)        
     }
     
     // MARK: - IBActions
     
-    @IBAction func toolBarButtonPressed(sender: AnyObject) {
+    @IBAction func toolBarButtonPressed(_ sender: AnyObject) {
         // Check what action we need to do by checking the selection count, remove or refresh
-        guard let selectedIndexPaths = collectionView.indexPathsForSelectedItems() else {
+        guard let selectedIndexPaths = collectionView.indexPathsForSelectedItems else {
             return
         }
         
@@ -255,16 +254,16 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             if pin.photos.count != 0 {
                 // First scroll all the way to to the top to prevent the snapshot warning
                 // We know that there's an item at the first indexpath from the photo count
-                collectionView.scrollToItemAtIndexPath(NSIndexPath(forItem: 0, inSection: 0), atScrollPosition: .Top, animated: false)
+                collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: false)
             }
             
             // Reset the page if there isn't enough photos
-            pin.page = pin.originalPhotoCount == 21 ? (1+pin.page): 1
+            pin.page = (pin.originalPhotoCount == 21) ? NSNumber(value: 1+pin.page.intValue): NSNumber(value: 1)
             
             let dictionary: [String: AnyObject] = [
-                Pin.Keys.Longitude: coordinate.longitude,
-                Pin.Keys.Latitude: coordinate.latitude,
-                Flickr.ParameterKeys.Page: pin.page
+                Pin.Keys.Longitude: coordinate.longitude as AnyObject,
+                Pin.Keys.Latitude: coordinate.latitude as AnyObject,
+                Flickr.ParameterKeys.Page: pin.page as AnyObject
             ]
             
             // Remove all photos related to this pin
@@ -275,29 +274,29 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         } else {
             // Create the dictionary send to the Update initializer
             let dictionary: [String: AnyObject] = [
-                Update.Keys.Description: "Image(s) Deleted",
-                Update.Keys.Latitude: pin.latitude,
-                Update.Keys.Longitude: pin.longitude,
-                Update.Keys.NumberOfItems: selectedIndexPaths.count,
-                Update.Keys.UpdateType: "Image Deletion"
+                Update.Keys.Description: "Image(s) Deleted" as AnyObject,
+                Update.Keys.Latitude: pin.latitude as AnyObject,
+                Update.Keys.Longitude: pin.longitude as AnyObject,
+                Update.Keys.NumberOfItems: selectedIndexPaths.count as AnyObject,
+                Update.Keys.UpdateType: "Image Deletion" as AnyObject
             ]
             
             // Create an update
             let _ = Update(dictionary: dictionary, context: sharedContext)
             
             // Sort the index paths for deletion, backwards
-            let reverseSortedIndexPaths = selectedIndexPaths.sort({ (i1, i2) -> Bool in
+            let reverseSortedIndexPaths = selectedIndexPaths.sorted(by: { (i1, i2) -> Bool in
                 i1.row > i2.row
             })
             
             for indexPath in reverseSortedIndexPaths {
-                guard let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as? Photo else {
+                guard let photo = self.fetchedResultsController.object(at: indexPath) as? Photo else {
                     print("Invalid index at \(indexPath.row)")
                     return
                 }
                 
                 // Remove the photos (underlying document objects are being deleted by the managedobject preparefordelete
-                self.fetchedResultsController.managedObjectContext.deleteObject(photo)
+                self.fetchedResultsController.managedObjectContext.delete(photo)
                 CoreDataStackManager.sharedInstance().saveContext()
             }
         }
@@ -308,13 +307,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - Selectors
     
-    func displayLargerPhoto(gesture: UILongPressGestureRecognizer) {
+    func displayLargerPhoto(_ gesture: UILongPressGestureRecognizer) {
         let cell = gesture.view as! PhotoCollectionViewCell
-        if !cell.activityIndicator.isAnimating() {
+        if !cell.activityIndicator.isAnimating {
             switch gesture.state {
-            case .Began:
+            case .began:
                 let cell = gesture.view as! PhotoCollectionViewCell
-                guard let indexPath = collectionView.indexPathForCell(cell) else {
+                guard let indexPath = collectionView.indexPath(for: cell) else {
                     print("Cell not in this indexPath")
                     return
                 }
@@ -322,7 +321,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
                 let photo = fetchedResultsController.fetchedObjects![indexPath.row] as! Photo
                 
                 imagePopUpView = ImagePopUpView.imagePopUpViewInView(view, animated: true, photo: photo)
-            case .Ended:
+            case .ended:
                 imagePopUpView?.removeFromSuperview()
                 imagePopUpView = nil
             default: break
@@ -334,14 +333,14 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - Helper methods
     
-    func toggleSelection(indexPath: NSIndexPath?) {
+    func toggleSelection(_ indexPath: IndexPath?) {
         if let indexPath = indexPath {
-            let cell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCollectionViewCell
+            let cell = collectionView.cellForItem(at: indexPath) as! PhotoCollectionViewCell
             cell.alpha = cell.alpha == 1.0 ? 0.5: 1.0
         }
         
         // If there is more than one indexpath selected
-        guard let count = collectionView.indexPathsForSelectedItems()?.count else {
+        guard let count = collectionView.indexPathsForSelectedItems?.count else {
             return
         }
         
@@ -349,8 +348,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     }
     
     func toggleUI() {
-        activityIndicator.isAnimating() ? activityIndicator.stopAnimating(): activityIndicator.startAnimating()
-        toolbarButton.enabled = !toolbarButton.enabled
+        activityIndicator.isAnimating ? activityIndicator.stopAnimating(): activityIndicator.startAnimating()
+        toolbarButton.isEnabled = !toolbarButton.isEnabled
     }
     
     func checkToEnableUI() -> Bool {
@@ -364,7 +363,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         // Enable the toolbarbutton and stop the activity indicator
         guard unloadedPhotos.count > 0 else {
             print("Enabling UI")
-            self.toolbarButton.enabled = true
+            self.toolbarButton.isEnabled = true
             self.activityIndicator.stopAnimating()
             
             return true

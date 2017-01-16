@@ -15,39 +15,39 @@ import MapKit
 class Pin: NSManagedObject {
     @NSManaged var latitude: Double
     @NSManaged var longitude: Double
-    @NSManaged var dateCreated: NSDate
+    @NSManaged var dateCreated: Date
     @NSManaged var photos: [Photo]
     
     // Used for paginating through the photo search API
     // Increment if new photos are requested.
-    @NSManaged var page: Int
+    @NSManaged var page: NSNumber
     
     // This is to check if the photo collection has been modified. (i.e deleted some photos)
     @NSManaged var originalPhotoCount: Int
     
     // A task related to this pin, can be used to check if the task state
-    var task: NSURLSessionTask?
+    var task: URLSessionTask?
     
     struct Keys {
         static let Latitude = "latitude"
         static let Longitude = "longitude"
     }
     
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
     
-    init(dictionary: [String: AnyObject], context: NSManagedObjectContext) {
-        let entity = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)!
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    init(dictionary: [String: Any], context: NSManagedObjectContext) {
+        let entity = NSEntityDescription.entity(forEntityName: "Pin", in: context)!
+        super.init(entity: entity, insertInto: context)
         
         // Assign the creation time to this managed object.
-        self.dateCreated = NSDate()
+        self.dateCreated = Date()
         
         self.latitude = dictionary[Keys.Latitude] as! Double
         self.longitude = dictionary[Keys.Longitude] as! Double
         
-        self.page = dictionary[Flickr.ParameterKeys.Page] as! Int
+        self.page = dictionary[Flickr.ParameterKeys.Page] as! NSNumber
     }
     
     override func prepareForDeletion() {
@@ -61,11 +61,11 @@ class Pin: NSManagedObject {
         
         // Create the dictionary send to initialize an update object
         let dictionary: [String: AnyObject] = [
-            Update.Keys.Description: "Image(s) Deleted",
-            Update.Keys.Latitude: latitude,
-            Update.Keys.Longitude: longitude,
-            Update.Keys.NumberOfItems: photos.count,
-            Update.Keys.UpdateType: "Image Deletion"
+            Update.Keys.Description: "Image(s) Deleted" as AnyObject,
+            Update.Keys.Latitude: latitude as AnyObject,
+            Update.Keys.Longitude: longitude as AnyObject,
+            Update.Keys.NumberOfItems: photos.count as AnyObject,
+            Update.Keys.UpdateType: "Image Deletion" as AnyObject
         ]
         
         let _ = Update(dictionary: dictionary, context: CoreDataStackManager.sharedInstance().managedObjectContext)
@@ -80,7 +80,7 @@ class Pin: NSManagedObject {
             photo.pin = nil
             
             // Delete the entire photo object from core data, and save
-            CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(photo)
+            CoreDataStackManager.sharedInstance().managedObjectContext.delete(photo)
             CoreDataStackManager.sharedInstance().saveContext()
         }
     }

@@ -11,11 +11,11 @@ import UIKit
 
 class ImageCache {
     
-    private var inMemoryCache = NSCache()
+    fileprivate var inMemoryCache = NSCache<AnyObject, AnyObject>()
     
     // MARK: - Saving images
     
-    func imageWithIdentifier(identifier: String) -> UIImage? {
+    func imageWithIdentifier(_ identifier: String) -> UIImage? {
         // Verify that the image is not an empty string
         guard identifier != "" else {
             print("Unable to retrieve photo due to invalid identifier")
@@ -25,12 +25,12 @@ class ImageCache {
         let path = pathForIdentifier(identifier)
         
         // First try the memory cache
-        if let image = inMemoryCache.objectForKey(path) as? UIImage {
+        if let image = inMemoryCache.object(forKey: path as AnyObject) as? UIImage {
             return image
         }
         
         // Next Try the hard drive
-        if let data = NSData(contentsOfFile: path) {
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
             return UIImage(data: data)
         }
         
@@ -39,32 +39,32 @@ class ImageCache {
     
     // MARK: - Retrieving images
     
-    func storeImage(image: UIImage?, withIdentifier identifier: String) {
+    func storeImage(_ image: UIImage?, withIdentifier identifier: String) {
         let path = pathForIdentifier(identifier)
         
         // if the image is nil, then remove the object that is already at the path
         if image == nil {
-            inMemoryCache.removeObjectForKey(path)
+            inMemoryCache.removeObject(forKey: path as AnyObject)
             
             do {
-                try NSFileManager.defaultManager().removeItemAtPath(path)
+                try FileManager.default.removeItem(atPath: path)
             } catch {}
             
             return
         }
         
-        inMemoryCache.setObject(image!, forKey: path)
+        inMemoryCache.setObject(image!, forKey: path as AnyObject)
         
         let data = UIImagePNGRepresentation(image!)!
-        data.writeToFile(path, atomically: true)
+        try? data.write(to: URL(fileURLWithPath: path), options: [.atomic])
     }
     
     // MARK: - Helper methods
     
-    func pathForIdentifier(identifier: String) -> String {
-        let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-        let fullURL = documentsDirectoryURL.URLByAppendingPathComponent(identifier)
+    func pathForIdentifier(_ identifier: String) -> String {
+        let documentsDirectoryURL: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fullURL = documentsDirectoryURL.appendingPathComponent(identifier)
         
-        return fullURL.path!
+        return fullURL.path
     }
 }

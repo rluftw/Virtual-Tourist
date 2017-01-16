@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 class Flickr {
-    let session = NSURLSession.sharedSession()
+    let session = URLSession.shared
     
     class func sharedInstance() -> Flickr {
         struct Singleton {
@@ -25,7 +25,7 @@ class Flickr {
     
     // MARK: - Canceling network task
     func cancelAllNetworkTask() {
-        NSURLSession.sharedSession().getAllTasksWithCompletionHandler({ (tasks) -> Void in
+        URLSession.shared.getAllTasks(completionHandler: { (tasks) -> Void in
             for task in tasks {
                 task.cancel()
             }
@@ -34,31 +34,32 @@ class Flickr {
 
     // MARK: - All purpose task method for data
     
-    func httpGetRequest(parameters: [String: AnyObject]?, completionHandler: (result: AnyObject!, error: NSError?)->Void) -> NSURLSessionTask {
-        let request = NSURLRequest(URL: getCompleteURL(parameters))
+    func httpGetRequest(_ parameters: [String: Any]?, completionHandler: @escaping (_ result: Any?, _ error: NSError?)->Void) -> URLSessionTask {
+        let request = URLRequest(url: getCompleteURL(parameters))
         
-        let task = session.dataTaskWithRequest(request) { (data, response, error) -> Void in
+        let task = session.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
             // Check for errors
             guard error == nil else {
                 // Use the completion handler to notify unsuccessful task
-                self.createErrorWithCompletionHandler(error!.code, error: error!.localizedDescription, completionHandler: completionHandler)
+                _ = self.createErrorWithCompletionHandler(error!._code, error: error!.localizedDescription, completionHandler: completionHandler)
+    
                 return
             }
             
             // Check the response
-            let statusCode = (response as! NSHTTPURLResponse).statusCode
+            let statusCode = (response as! HTTPURLResponse).statusCode
 
             // Excluded responses include: Write Fail (106), Unknown User (2), Parameterless Search (3), Permission (4)
             // Own Contact Search (17), Invalid API Key (100), No Valid Machine Tag (11, 12), XML-RPC (115), Too many tags (1)
             // SOAP (114), Formats (111, 112)
             
             switch statusCode {
-            case 10: self.createErrorWithCompletionHandler(10, error: "Search is currently not available", completionHandler: completionHandler)
-            case 18: self.createErrorWithCompletionHandler(18, error: "Illogical arguments", completionHandler: completionHandler)
-            case 105: self.createErrorWithCompletionHandler(105, error: "Service currently unavailable", completionHandler: completionHandler)
+            case 10: _ = self.createErrorWithCompletionHandler(10, error: "Search is currently not available", completionHandler: completionHandler)
+            case 18: _ = self.createErrorWithCompletionHandler(18, error: "Illogical arguments", completionHandler: completionHandler)
+            case 105: _ = self.createErrorWithCompletionHandler(105, error: "Service currently unavailable", completionHandler: completionHandler)
 
             // TODO: Remove - Staying here for testing
-            case 116: self.createErrorWithCompletionHandler(116, error: "Bad URL found", completionHandler: completionHandler)
+            case 116: _ = self.createErrorWithCompletionHandler(116, error: "Bad URL found", completionHandler: completionHandler)
             default: break
             }
 
@@ -69,13 +70,13 @@ class Flickr {
             
             // Check if there's data
             guard let data = data else {
-                 self.createErrorWithCompletionHandler(999, error: "No data retrieved", completionHandler: completionHandler)
+                 _ = self.createErrorWithCompletionHandler(999, error: "No data retrieved", completionHandler: completionHandler)
                 return
             }
             
             // Everything's a success Handle the data
             self.parseJSONWithCompletionHandler(data, completionHandler: completionHandler)
-        }
+        }) 
         
         // Start the task
         task.resume()
@@ -91,8 +92,8 @@ extension Flickr {
     
     // Create a URL based on the parameters given to the method
     
-    private func getCompleteURL(parameters: [String: AnyObject]?) -> NSURL {
-        let components = NSURLComponents()
+    fileprivate func getCompleteURL(_ parameters: [String: Any]?) -> URL {
+        var components = URLComponents()
         
         // Protocol
         components.scheme = Constants.Scheme
@@ -100,28 +101,28 @@ extension Flickr {
         components.path = Constants.Path
 
         guard let parameters = parameters else {
-            return components.URL!
+            return components.url!
         }
         
-        components.queryItems = [NSURLQueryItem]()
+        components.queryItems = [URLQueryItem]()
         
         for (key, value) in parameters {
             let value = "\(value)"
-            let query = NSURLQueryItem(name: key, value: value)
+            let query = URLQueryItem(name: key, value: value)
             components.queryItems?.append(query)
         }
         
-        return components.URL!
+        return components.url!
     }
     
     // Serializes the data to JSON and completes the task
     
-    func parseJSONWithCompletionHandler(data: NSData, completionHandler: (AnyObject!, NSError?)->Void) {
+    func parseJSONWithCompletionHandler(_ data: Data, completionHandler: (Any?, NSError?)->Void) {
         var parseError: NSError?
         
-        let parsedResults: AnyObject?
+        let parsedResults: Any?
         do {
-            parsedResults = try NSJSONSerialization.JSONObjectWithData(data, options: .AllowFragments)
+            parsedResults = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
         } catch let error as NSError {
             parseError = error
             parsedResults = nil
@@ -138,9 +139,9 @@ extension Flickr {
     
     // Helper method to create an error for httpGetRequest
     
-    func createErrorWithCompletionHandler(code: Int, error: String, completionHandler: (AnyObject!, NSError?)->Void) -> NSError {
+    func createErrorWithCompletionHandler(_ code: Int, error: String, completionHandler: (AnyObject?, NSError?)->Void) -> NSError {
         var userInfo = [String: AnyObject]()
-        userInfo[NSLocalizedDescriptionKey] = error
+        userInfo[NSLocalizedDescriptionKey] = error as AnyObject?
         
         return NSError(domain:"httpGetRequest", code: code, userInfo: userInfo)
     }

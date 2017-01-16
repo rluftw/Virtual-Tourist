@@ -17,6 +17,6 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     // MARK: - Helper methods
     
     func toggleUI() {
-        activityIndicator.isAnimating() ? activityIndicator.stopAnimating(): activityIndicator.startAnimating()
+        activityIndicator.isAnimating ? activityIndicator.stopAnimating(): activityIndicator.startAnimating()
     }
 }

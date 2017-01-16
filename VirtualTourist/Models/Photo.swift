@@ -17,7 +17,7 @@ class Photo: NSManagedObject {
     @NSManaged var server: String
     @NSManaged var title: String
     @NSManaged var pin: Pin?
-    @NSManaged var dateCreated: NSDate
+    @NSManaged var dateCreated: Date
     @NSManaged var farm: Int
     @NSManaged var imageLoaded: Bool
     
@@ -32,15 +32,15 @@ class Photo: NSManagedObject {
         static let Farm = "farm"
     }
     
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
     
-    init(dictionary: [String: AnyObject], context: NSManagedObjectContext) {
-        let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    init(dictionary: [String: Any], context: NSManagedObjectContext) {
+        let entity = NSEntityDescription.entity(forEntityName: "Photo", in: context)!
+        super.init(entity: entity, insertInto: context)
         
-        self.dateCreated = NSDate()
+        self.dateCreated = Date()
         
         self.id = dictionary[Keys.ID] as! String
         self.owner = dictionary[Keys.Owner] as! String
@@ -49,10 +49,10 @@ class Photo: NSManagedObject {
         self.title = dictionary[Keys.Title] as! String
         self.farm = dictionary[Keys.Farm] as! Int
         
-        let formatter = NSDateFormatter()
+        let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMddGHHmmsszzz"
         
-        self.imagePath = "/\(formatter.stringFromDate(dateCreated))_\(self.id)_\(self.secret)_q.jpg"
+        self.imagePath = "/\(formatter.string(from: dateCreated))_\(self.id)_\(self.secret)_q.jpg"
         
         // Used to notify fetchresultscontroller
         self.imageLoaded = false
