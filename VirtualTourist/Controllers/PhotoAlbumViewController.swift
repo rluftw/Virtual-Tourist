@@ -70,6 +70,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
             case .canceling: print("Disabling the UI - Canceling"); pin.task?.resume()
             case .completed: print("Completed"); _ = checkToEnableUI()
             case .suspended: print("Suspended"); pin.task?.resume();
+            @unknown default: fatalError()
             }
         }
         
@@ -214,7 +215,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         }
         
         // Change alpha value based on whether the cell is selected
-        let index = collectionView.indexPathsForSelectedItems!.index(where: {(anIndexPath) -> Bool in
+        let index = collectionView.indexPathsForSelectedItems!.firstIndex(where: {(anIndexPath) -> Bool in
             return indexPath == anIndexPath
         })
         
@@ -307,7 +308,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     // MARK: - Selectors
     
-    func displayLargerPhoto(_ gesture: UILongPressGestureRecognizer) {
+    @objc func displayLargerPhoto(_ gesture: UILongPressGestureRecognizer) {
         let cell = gesture.view as! PhotoCollectionViewCell
         if !cell.activityIndicator.isAnimating {
             switch gesture.state {

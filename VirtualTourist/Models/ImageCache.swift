@@ -55,7 +55,7 @@ class ImageCache {
         
         inMemoryCache.setObject(image!, forKey: path as AnyObject)
         
-        let data = UIImagePNGRepresentation(image!)!
+        let data = image!.pngData()!
         try? data.write(to: URL(fileURLWithPath: path), options: [.atomic])
     }
     

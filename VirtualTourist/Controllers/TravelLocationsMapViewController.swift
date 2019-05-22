@@ -137,7 +137,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // Current Object Dragging
     var currentPinToMove: Pin!
     
-    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, didChange newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, didChange newState: MKAnnotationView.DragState, fromOldState oldState: MKAnnotationView.DragState) {
         
         switch newState {
         case .starting:
@@ -145,7 +145,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             
             // Get the object that has the starting Coordinate
             let pins = fetchedResultsController.fetchedObjects as! [Pin]
-            guard let index = pins.index(where: { (pin) -> Bool in
+            guard let index = pins.firstIndex(where: { (pin) -> Bool in
                 return pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude
             }) else { return }
             
@@ -182,7 +182,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     
     // MARK: - Selectors
     
-    func addPin(_ gesture: UILongPressGestureRecognizer) {
+    @objc func addPin(_ gesture: UILongPressGestureRecognizer) {
         
         // While the user is editing, adding pins is not available
         guard editingPin == false else {
@@ -220,7 +220,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
     // The first scene consist of 2 states which are editingPin/!editingPin
     // If editingPin, then a tap gesture on a pin would be to delete it
     // Otherwise, go to the photo album
-    func pinTapped(_ gesture: UITapGestureRecognizer) {
+    @objc func pinTapped(_ gesture: UITapGestureRecognizer) {
         let pinView = gesture.view as! MKPinAnnotationView
 
         if !editingPin {
@@ -235,7 +235,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             let pins = fetchedResultsController.fetchedObjects as! [Pin]
 
             // Grab the pin index associated with the coordinate
-            let index = pins.index(where: { (pin) -> Bool in
+            let index = pins.firstIndex(where: { (pin) -> Bool in
                 pin.latitude == pinView.annotation!.coordinate.latitude && pin.longitude == pinView.annotation!.coordinate.longitude
             })
             
@@ -313,7 +313,7 @@ class TravelLocationsMapViewController: UIViewController, NSFetchedResultsContro
             
             // Get the pin associated with the coordinate
             let allPins = fetchedResultsController.fetchedObjects as! [Pin]
-            guard let index = allPins.index(where: { (pin) -> Bool in
+            guard let index = allPins.firstIndex(where: { (pin) -> Bool in
                 pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude
             }) else { return }
             

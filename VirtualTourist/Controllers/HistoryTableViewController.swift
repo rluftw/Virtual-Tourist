@@ -67,7 +67,7 @@ class HistoryTableViewController: UITableViewController, NSFetchedResultsControl
     
     // MARK: - Table view delegate
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         switch editingStyle {
         case .delete:
             let fetchedObjects = fetchedResultsController.fetchedObjects as! [Update]
@@ -97,7 +97,7 @@ class HistoryTableViewController: UITableViewController, NSFetchedResultsControl
     }
     
     // MARK: - Selectors
-    func clearAll() {
+    @objc func clearAll() {
         let fetchedObjects = fetchedResultsController.fetchedObjects as! [Update]
         for update in fetchedObjects {
             CoreDataStackManager.sharedInstance().managedObjectContext.delete(update)
